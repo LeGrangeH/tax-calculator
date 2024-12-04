@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tax Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    input {
+      padding: 8px;
+      width: 300px;
+      max-width: 100%;
+      margin-bottom: 15px;
+    }
+    button {
+      padding: 10px 15px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .output {
+      margin-top: 20px;
+      width: 300px;
+      max-width: 100%;
+      padding: 10px;
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      text-align: center;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      height: 40px;
+      resize: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Retirement and Severance Tax Calculator</h1>
+  <label for="previousBenefits">Previous Severance and Retirement Benefits (R):</label>
+  <input type="number" id="previousBenefits" placeholder="Enter amount" />
+
+  <label for="currentSeverance">Current Severance Amount (R):</label>
+  <input type="number" id="currentSeverance" placeholder="Enter amount" />
+
+  <label for="currentCash">Current Cash Amount from Pension (R):</label>
+  <input type="number" id="currentCash" placeholder="Enter amount" />
+
+  <button onclick="calculateTax()">Calculate Tax Payable</button>
+
+  <textarea class="output" id="output" readonly></textarea>
+
+  <script>
+    function calculateTax() {
+      // Fetch user inputs
+      const previousBenefits = parseFloat(document.getElementById("previousBenefits").value) || 0;
+      const currentSeverance = parseFloat(document.getElementById("currentSeverance").value) || 0;
+      const currentCash = parseFloat(document.getElementById("currentCash").value) || 0;
+
+      const totalAggregate = previousBenefits + currentSeverance + currentCash;
+
+      // Tax brackets
+      const taxBrackets = [
+        { lower: 0, upper: 550000, rate: 0 },
+        { lower: 550001, upper: 770000, rate: 0.18 },
+        { lower: 770001, upper: 1155000, rate: 0.27 },
+        { lower: 1155001, upper: Infinity, rate: 0.36 },
+      ];
+
+      const fixedTaxes = [0, 0, 39600, 143550];
+
+      function calculateBracketTax(amount) {
+        let totalTax = 0;
+        for (let i = 0; i < taxBrackets.length; i++) {
+          const { lower, upper, rate } = taxBrackets[i];
+          if (amount > lower) {
+            const taxableAmount = Math.min(amount, upper) - lower;
+            totalTax += taxableAmount * rate;
+          } else {
+            break;
+          }
+        }
+        return totalTax;
+      }
+
+      // Calculate tax on total aggregate
+      const taxOnTotal = calculateBracketTax(totalAggregate);
+
+      // Calculate tax on previous benefits
+      const taxOnPrevious = calculateBracketTax(previousBenefits);
+
+      // Final tax payable
+      const taxPayable = Math.round(taxOnTotal - taxOnPrevious);
+
+      // Display result in the output textbox
+      const outputBox = document.getElementById("output");
+      outputBox.value = `R${taxPayable.toLocaleString()}`;
+    }
+  </script>
+</body>
+</html>
